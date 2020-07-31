@@ -4,7 +4,7 @@
 
 Realize the Internet connection between the server and clients. Start the server and client by typing `./ftpserver ../conf/server.conf` and `./client [ip] [port]` on bash respectively.
 
-In Phase I, the client provides more than six clauses similar to bash commands. The fundamental commands are listed below:
+In Phase I, the client provides more than six clauses similar to bash commands. The fundamental commands are listed as below:
 
 1. `cd` - change directory
 2. `ls` - list files and directories
