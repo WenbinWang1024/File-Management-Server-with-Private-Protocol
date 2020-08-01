@@ -9,9 +9,9 @@ In Phase I, the client provides more than six clauses similar to bash commands. 
 1. `cd` - change directory
 2. `ls` - list files and directories
 3. `puts` - upload local files to the server
-4. `gets` - download files from server to the local
+4. `gets` - download files from server to client
 5. `remove` - delete files on the server
 6. `pwd` - print working directory
 7. other commands such as `mkdir` and etc.
 
-The client only responds to legal commands.
+In this phase, clauses 1 to 6 will be correctly responded. User types a clause on client and presses enter to send it to the server. The command should be pretreated before being sent to the server. When receiving the command, server analyzes and then executes it if correct. The result of command execution will be sent to the client and output to the user.
