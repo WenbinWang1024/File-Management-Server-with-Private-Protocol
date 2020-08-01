@@ -14,7 +14,7 @@ int epoll_del(int epfd, int fd) {
     struct epoll_event event;
     memset(&event, 0, sizeof(event));
     event.data.fd = fd;
-    ERROR_CHECK(epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &event), -1, "epoll_del");
+    ERROR_CHECK(epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &event), -1, "epoll_ctl");
 
     return 0;
 }
