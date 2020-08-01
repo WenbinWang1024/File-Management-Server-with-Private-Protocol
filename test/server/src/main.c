@@ -60,7 +60,13 @@ int main(int argc, char ** argv) {
                     epoll_del(epfd, client_fd);
                     close(client_fd);
                 }
-
+                
+                // analyze commands
+                // test pwd
+                if (0 == strcmp("pwd", buf)) {
+                    char * wd = getcwd(NULL, 0);
+                    send(client_fd, wd, strlen(wd), 0);
+                }
             }
         }
     }
