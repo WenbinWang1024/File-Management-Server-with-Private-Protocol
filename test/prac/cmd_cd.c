@@ -1,4 +1,4 @@
-#include "../head/commonds.h"
+#include "../head/commands.h"
 
 //若服务端没有对应的文件夹，或cd后的路径是文件而不是文件夹，返回-1，成功返回0
 int cmd_cd(char *path,int sfd,char *cmd)
