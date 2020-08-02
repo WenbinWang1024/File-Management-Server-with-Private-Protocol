@@ -36,6 +36,7 @@ int tcp_regist(const char * server_conf) {
     read(conf_fd, temp_buf, sizeof(temp_buf));
     sscanf(temp_buf, "%s%s", ip, port);
 
+    close(conf_fd);
     int sfd = tcp_init(ip, atoi(port));
     return sfd;
 }
