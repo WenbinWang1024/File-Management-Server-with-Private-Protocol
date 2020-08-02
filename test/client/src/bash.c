@@ -25,6 +25,7 @@ int main(int argc, char ** argv) {
            inet_ntoa(server_addr.sin_addr),
            ntohs(server_addr.sin_port)
           );
+    printf("client > ");
 
     // epoll handles
     int epfd = epoll_create(1);
@@ -37,17 +38,10 @@ int main(int argc, char ** argv) {
     struct epoll_event event_list[MAX_EVENT_NO];
     memset(event_list, 0, sizeof(event_list));
 
-    int tolerance = 1;
     int input_not_empty = 0;
 
     while (1) {
         fflush(stdout);
-        if (tolerance) {
-            if (!input_not_empty) {
-                printf("client > ");
-            }
-            tolerance = 0;
-        }
 
         int prepared_num = epoll_wait(epfd, event_list, MAX_EVENT_NO, 0);
         for (int i = 0; i < prepared_num; ++i) {
@@ -57,7 +51,9 @@ int main(int argc, char ** argv) {
                 /* fflush(stdin); */
                 pretreat_str(buf, strlen(buf));
                 input_not_empty = send(sfd, buf, strlen(buf), 0);
-                tolerance = 1;
+                if (!input_not_empty) {
+                    printf("client > ");
+                }
             } // if
             if (sfd == event_list[i].data.fd) {
                 memset(buf, 0, sizeof(buf));
@@ -67,7 +63,17 @@ int main(int argc, char ** argv) {
                     printf("Unexpectedly disconnected!\n");
                     exit(0);
                 } // if
-                printf("%s", buf);
+
+                if (0 == strcmp("null", buf)) {
+                    // invalid command
+                    printf("invalid command\n");
+                }
+                else {
+                    printf("%s\n", buf);
+                }
+                
+                printf("client > ");
+
             } // if
         } // for
     } // while

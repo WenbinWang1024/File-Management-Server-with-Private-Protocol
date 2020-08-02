@@ -1,5 +1,6 @@
 #include "../head/epoll_management.h"
 #include "../head/tcp_net_socket.h"
+#include "../head/commands.h"
 
 int main(int argc, char ** argv) {
     // ./ftpserver ../conf/server.conf
@@ -64,8 +65,10 @@ int main(int argc, char ** argv) {
                 // analyze commands
                 // test pwd
                 if (0 == strcmp("pwd", buf)) {
-                    char * wd = getcwd(NULL, 0);
-                    send(client_fd, wd, strlen(wd), 0);
+                    send_pwd(client_fd);
+                }
+                else {
+                    send(client_fd, "null", 4, 0);
                 }
             }
         }
