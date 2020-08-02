@@ -12,16 +12,9 @@ int main(int argc, char ** argv) {
     // return val for checking
     int ret = 0;
 
-    // tcp init
-    int conf_fd = open(argv[1], O_RDONLY);
-    ERROR_CHECK(conf_fd, -1, "open conf_fd");
-    read(conf_fd, buf, sizeof(buf));
-    char ip[16] = {0};
-    char port[5] = {0};
-    sscanf(buf, "%s%s", ip, port);
-    int sfd = tcp_init(ip, atoi(port));
-    ERROR_CHECK(sfd, -1, "tcp_init");
-    
+    // tcp regist
+    int sfd = tcp_regist(argv[1]);    
+
     // client info
     struct sockaddr_in client_addr;
     memset(&client_addr, 0, sizeof(client_addr));

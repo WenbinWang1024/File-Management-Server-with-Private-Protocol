@@ -26,6 +26,20 @@ int tcp_init(const char * ip, int port) {
     return sfd;
 }
 
+int tcp_regist(const char * server_conf) {
+    int conf_fd = open(server_conf, O_RDONLY);
+    ERROR_CHECK(conf_fd, -1, "open");
+
+    char temp_buf[1 << 5] = {0};
+    char ip[16] = {0};
+    char port[5] = {0};
+    read(conf_fd, temp_buf, sizeof(temp_buf));
+    sscanf(temp_buf, "%s%s", ip, port);
+
+    int sfd = tcp_init(ip, atoi(port));
+    return sfd;
+}
+
 int tcp_accept(int sfd) {
     // client_addr
     struct sockaddr_in client_addr;

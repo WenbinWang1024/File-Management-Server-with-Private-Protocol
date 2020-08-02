@@ -70,6 +70,13 @@ int main(int argc, char ** argv) {
                 printf("client > ");
 
             } // if
+
+            if (sfd == event_list[i].data.fd) {
+                if (0 == recv(sfd, buf, sizeof(buf), 0)) {
+                    printf("\nUnexpected disconnection!\n");
+                    exit(0);
+                }
+            }
         } // for
     } // while
 
