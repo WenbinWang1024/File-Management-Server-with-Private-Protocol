@@ -14,4 +14,4 @@ In Phase I, the client provides more than six clauses similar to bash commands. 
 6. `pwd` - print working directory
 7. other commands such as `mkdir` and etc.
 
-In this phase, clauses 1 to 6 will be correctly responded. User types a clause on client and presses enter to send it to the server. The command should be pretreated before being sent to the server. When receiving the command, server analyzes and then executes it if correct. The result of command execution will be sent to the client and output to the user.
+In this phase, clauses 1 to 6 will be correctly responded. User types a clause on client and presses enter to send it to the server. The command should be pretreated and checked before being sent to the server. Server executes commands after receiving. The result of command execution will be sent to the client and output to the user.
