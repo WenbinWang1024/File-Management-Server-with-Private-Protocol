@@ -65,10 +65,7 @@ int main(int argc, char ** argv) {
                 // analyze commands
                 // test pwd
                 if (0 == strcmp("pwd", buf)) {
-                    send_pwd(client_fd);
-                }
-                else {
-                    send(client_fd, "null", 4, 0);
+                    cmd_pwd(client_fd);
                 }
             }
         }

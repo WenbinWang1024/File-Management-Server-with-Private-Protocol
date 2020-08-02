@@ -1,11 +1,18 @@
 #include "../head/epoll_management.h"
 #include "../head/tcp_net_socket.h"
+#include "../head/commands.h"
 #include "../head/str_dealing.h"
 
 int main(int argc, char ** argv) {
     // ./bash [ip] [port]
     ARGS_CHECK(argc, 3);
     int ret = -1;
+
+    // commands
+    const int MAX_CMD_NO = 7;
+    char * cmd_list[MAX_CMD_NO] = {
+        "", "cd", "ls", "puts", "gets", "remove", "pwd"
+    };
 
     // buffer
     char buf[1 << 10] = {0};
@@ -38,7 +45,7 @@ int main(int argc, char ** argv) {
     struct epoll_event event_list[MAX_EVENT_NO];
     memset(event_list, 0, sizeof(event_list));
 
-    int input_not_empty = 0;
+    /* int input_not_empty = 0; */
 
     while (1) {
         fflush(stdout);
@@ -47,31 +54,37 @@ int main(int argc, char ** argv) {
         for (int i = 0; i < prepared_num; ++i) {
             if (STDIN_FILENO == event_list[i].data.fd) {
                 memset(buf, 0, sizeof(buf));
-                fgets(buf, sizeof(buf), stdin);
-                /* fflush(stdin); */
+                ret = read(STDIN_FILENO, buf, sizeof(buf));
+                ERROR_CHECK(ret, -1, "read");
                 pretreat_str(buf, strlen(buf));
-                input_not_empty = send(sfd, buf, strlen(buf), 0);
-                if (!input_not_empty) {
-                    printf("client > ");
-                }
-            } // if
-            if (sfd == event_list[i].data.fd) {
-                memset(buf, 0, sizeof(buf));
-                ret = recv(sfd, buf, sizeof(buf), 0);
-                if (0 == ret) {
-                    // server disconnected
-                    printf("Unexpectedly disconnected!\n");
-                    exit(0);
-                } // if
 
-                if (0 == strcmp("null", buf)) {
-                    // invalid command
-                    printf("invalid command\n");
+                /* input_not_empty = strlen(buf); */
+                /* if (!input_not_empty) { */
+                /*     printf("client > "); */
+                /*     continue; */
+                /* } */
+
+                CMD_NO cmd = get_cmd_no(cmd_list, MAX_CMD_NO, buf);
+                switch (cmd) {
+                case EMPTY:
+                    break;
+                case CD:
+                    break;
+                case LS:
+                    break;
+                case PUTS:
+                    break;
+                case GETS:
+                    break;
+                case REMOVE:
+                    break;
+                case PWD:
+                    cmd_pwd(sfd, buf, sizeof(buf));
+                    break;
+                default:
+                    // INVALID
+                    printf("Invalid command\n");
                 }
-                else {
-                    printf("%s\n", buf);
-                }
-                
                 printf("client > ");
 
             } // if
