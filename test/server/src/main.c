@@ -3,7 +3,7 @@
 #include "../head/commands.h"
 
 int main(int argc, char ** argv) {
-    // ./ftpserver ../conf/server.conf
+    // arg format: ./ftpserver ../conf/server.conf
     ARGS_CHECK(argc, 2);
 
     /* init zone */
@@ -41,7 +41,7 @@ int main(int argc, char ** argv) {
                        ntohs(client_addr.sin_port)
                        );
                 epoll_add(epfd, client_fd);
-            }
+            } // if
             if (client_fd == event_list[i].data.fd) {
                 memset(buf, 0, sizeof(buf));
                 ret = recv(client_fd, buf, sizeof(buf), 0);
@@ -52,16 +52,16 @@ int main(int argc, char ** argv) {
                           );
                     epoll_del(epfd, client_fd);
                     close(client_fd);
-                }
+                } // if
                 
-                // analyze commands
+                /* analyze commands */
                 // test pwd
                 if (0 == strcmp("pwd", buf)) {
                     cmd_pwd(client_fd);
-                }
-            }
-        }
-    }
+                } // if
+            } // if
+        } // for
+    } // while
     
     close(client_fd);
     close(sfd);

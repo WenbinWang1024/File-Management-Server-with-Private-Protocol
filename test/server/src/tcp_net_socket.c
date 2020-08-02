@@ -50,7 +50,7 @@ int tcp_accept(int sfd) {
     // connect
     int client_fd = accept(sfd, (struct sockaddr *) &client_addr, &addr_len);
     ERROR_CHECK(client_fd, -1, "accept");
-    printf("Client %s:%-5d successfully connected!\n",
+    printf("Client %s:%d successfully connected!\n",
            inet_ntoa(client_addr.sin_addr),
            ntohs(client_addr.sin_port)
            );

@@ -6,8 +6,3 @@ int cmd_pwd(int client_fd) {
     
     return 0;
 }
-
-int cmd_ls(int client_fd) {
-    
-    return 0;
-}
