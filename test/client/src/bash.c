@@ -4,14 +4,14 @@
 #include "../head/str_dealing.h"
 
 int main(int argc, char ** argv) {
-    // ./bash [ip] [port]
+    // arg format: ./bash [ip] [port]
     ARGS_CHECK(argc, 3);
 
-    // socket and connect
+    // tcp connect
     int sfd = tcp_connect(argv[1], atoi(argv[2]));
 
     /* init zone */
-    // commands
+    // register commands
     const int MAX_CMD_NO = 7;
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
