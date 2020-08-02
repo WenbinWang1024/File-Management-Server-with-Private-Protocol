@@ -59,6 +59,13 @@ int tcp_connect(const char * ip, int port) {
     // connect
     ERROR_CHECK(connect(sfd, (struct sockaddr *) &server_addr, sizeof(server_addr)), -1, "connect");
 
+    // print state
+    system("clear");
+    printf("Server %s:%d successfully connected!\n", 
+           inet_ntoa(server_addr.sin_addr),
+           ntohs(server_addr.sin_port)
+          );
+
     // return
     return sfd;
 }
