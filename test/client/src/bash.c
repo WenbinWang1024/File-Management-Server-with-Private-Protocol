@@ -45,8 +45,6 @@ int main(int argc, char ** argv) {
     struct epoll_event event_list[MAX_EVENT_NO];
     memset(event_list, 0, sizeof(event_list));
 
-    /* int input_not_empty = 0; */
-
     while (1) {
         fflush(stdout);
 
@@ -57,12 +55,6 @@ int main(int argc, char ** argv) {
                 ret = read(STDIN_FILENO, buf, sizeof(buf));
                 ERROR_CHECK(ret, -1, "read");
                 pretreat_str(buf, strlen(buf));
-
-                /* input_not_empty = strlen(buf); */
-                /* if (!input_not_empty) { */
-                /*     printf("client > "); */
-                /*     continue; */
-                /* } */
 
                 CMD_NO cmd = get_cmd_no(cmd_list, MAX_CMD_NO, buf);
                 switch (cmd) {
