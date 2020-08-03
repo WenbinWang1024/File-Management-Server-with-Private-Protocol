@@ -36,6 +36,7 @@ int tcp_regist(const char * server_conf) {
     read(conf_fd, temp_buf, sizeof(temp_buf));
     sscanf(temp_buf, "%s%s", ip, port);
 
+    close(conf_fd);
     int sfd = tcp_init(ip, atoi(port));
     return sfd;
 }
@@ -49,7 +50,7 @@ int tcp_accept(int sfd) {
     // connect
     int client_fd = accept(sfd, (struct sockaddr *) &client_addr, &addr_len);
     ERROR_CHECK(client_fd, -1, "accept");
-    printf("Client %s:%-5d successfully connected!\n",
+    printf("Client %s:%d successfully connected!\n",
            inet_ntoa(client_addr.sin_addr),
            ntohs(client_addr.sin_port)
            );
