@@ -9,6 +9,8 @@ int main(int argc, char ** argv) {
     /* init zone */
     // buffer
     char buf[1 << 10] = {0};
+    // cmd
+    cmd_t cmd;
     // return val for checking
     int ret = 0;
     // tcp regist
@@ -43,8 +45,8 @@ int main(int argc, char ** argv) {
                 epoll_add(epfd, client_fd);
             } // if
             if (client_fd == event_list[i].data.fd) {
-                memset(buf, 0, sizeof(buf));
-                ret = recv(client_fd, buf, sizeof(buf), 0);
+                memset(&cmd, 0, sizeof(cmd));
+                ret = recv(client_fd, &cmd, sizeof(cmd), 0);
                 if (0 == ret) {
                     printf("Client %s:%d disconnected!\n",
                            inet_ntoa(client_addr.sin_addr),
@@ -53,12 +55,33 @@ int main(int argc, char ** argv) {
                     epoll_del(epfd, client_fd);
                     close(client_fd);
                 } // if
-                
+
                 /* analyze commands */
-                // test pwd
-                if (0 == strcmp("pwd", buf)) {
+                switch(cmd.cmd_no) {
+                case CD:
+                    cmd_cd(client_fd, &cmd);
+                    break;
+                case LS:
+                    break;
+                case PUTS:
+                    break;
+                case GETS:
+                    break;
+                case REMOVE:
+                    break;
+                case PWD:
+                    cmd_pwd(client_fd);
+                    break;
+                default:
+                    continue;   
+                }
+                if (0 == strncmp("cd", buf, 2)) {
+
+                }
+                else if (0 == strcmp("pwd", buf)) {
                     cmd_pwd(client_fd);
                 } // if
+                
             } // if
         } // for
     } // while

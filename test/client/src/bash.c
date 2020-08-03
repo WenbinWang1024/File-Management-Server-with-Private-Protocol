@@ -16,6 +16,7 @@ int main(int argc, char ** argv) {
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
     };
+    cmd_t cmd;
     // buffer
     char buf[1 << 10] = {0};
     // return val
@@ -41,16 +42,17 @@ int main(int argc, char ** argv) {
         int prepared_num = epoll_wait(epfd, event_list, MAX_EVENT_NO, 0);
         for (int i = 0; i < prepared_num; ++i) {
             if (STDIN_FILENO == event_list[i].data.fd) {
-                memset(buf, 0, sizeof(buf));
-                ret = read(STDIN_FILENO, buf, sizeof(buf));
+                memset(&cmd, 0, sizeof(cmd));
+                ret = read(STDIN_FILENO, cmd.cmd, sizeof(cmd.cmd));
                 ERROR_CHECK(ret, -1, "read");
-                pretreat_str(buf, strlen(buf));
+                pretreat_str(cmd.cmd, strlen(cmd.cmd));
 
-                CMD_NO cmd = get_cmd_no(cmd_list, MAX_CMD_NO, buf);
-                switch (cmd) {
+                cmd.cmd_no = get_cmd_no(cmd_list, MAX_CMD_NO, cmd.cmd);
+                switch (cmd.cmd_no) {
                 case EMPTY:
                     break;
                 case CD:
+                    cmd_cd(sfd, &cmd, buf, sizeof(buf));
                     break;
                 case LS:
                     break;
@@ -61,7 +63,7 @@ int main(int argc, char ** argv) {
                 case REMOVE:
                     break;
                 case PWD:
-                    cmd_pwd(sfd, buf, sizeof(buf));
+                    cmd_pwd(sfd, &cmd, buf, sizeof(buf));
                     break;
                 default:
                     // INVALID

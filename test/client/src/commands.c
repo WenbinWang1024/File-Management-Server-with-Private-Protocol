@@ -12,7 +12,17 @@ CMD_NO get_cmd_no(char ** cmd_list, int max_cmd_no, const char * cmd) {
     return INVALID;
 }
 
-int cmd_pwd(int sfd, char * buf, int buf_size) {
+int cmd_cd(int sfd, const cmd_t * cmd, char * buf, int buf_size) {
+    send(sfd, &cmd, sizeof(cmd_t), 0);
+    memset(buf, 0, buf_size);
+    recv(sfd, buf, sizeof(buf), 0);
+    printf("Path: %s\n", buf);
+
+    return 0;
+}
+
+int cmd_pwd(int sfd, const cmd_t * cmd, char * buf, int buf_size) {
+    send(sfd, cmd, sizeof(cmd_t), 0);
     send(sfd, "pwd", 3, 0);
     memset(buf, 0, buf_size);
     recv(sfd, buf, buf_size, 0);
