@@ -10,8 +10,6 @@ typedef struct {
     char cmd[1 << 7];
 } cmd_t, * pCmd_t;
 
-CMD_NO get_cmd_no(char ** cmd_list, int max_cmd_no, const char * cmd);
-
 int cmd_cd(int client_fd, const cmd_t * cmd);
 
 int cmd_pwd(int client_fd);

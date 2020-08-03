@@ -57,6 +57,7 @@ int main(int argc, char ** argv) {
                 } // if
 
                 /* analyze commands */
+                printf("cmd_no: %d\n", cmd.cmd_no);
                 switch(cmd.cmd_no) {
                 case CD:
                     cmd_cd(client_fd, &cmd);
@@ -75,12 +76,6 @@ int main(int argc, char ** argv) {
                 default:
                     continue;   
                 }
-                if (0 == strncmp("cd", buf, 2)) {
-
-                }
-                else if (0 == strcmp("pwd", buf)) {
-                    cmd_pwd(client_fd);
-                } // if
                 
             } // if
         } // for

@@ -1,23 +1,11 @@
 #include "../head/commands.h"
 
-CMD_NO get_cmd_no(char ** cmd_list, int max_cmd_no, const char * cmd) {
-    if (0 == strlen(cmd)) {
-        return EMPTY;
-    }
-    for (int cmd_no = 1; cmd_no < max_cmd_no; ++cmd_no) {
-        if (0 == strncmp(cmd_list[cmd_no], cmd, strlen(cmd_list[cmd_no]))) {
-            return (CMD_NO) cmd_no;
-        }
-    }
-    return INVALID;
-}
-
 int cmd_cd(int client_fd, const cmd_t * cmd) {
     int pos = 0;
-    while (' ' != cmd->cmd[pos]) {
+    while (pos < strlen(cmd->cmd) && ' ' != cmd->cmd[pos]) {
         ++pos;
     }
-    while (' ' == cmd->cmd[pos]) {
+    while (pos < strlen(cmd->cmd) && ' ' == cmd->cmd[pos]) {
         ++pos;
     }
 
