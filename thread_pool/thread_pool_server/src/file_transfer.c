@@ -56,3 +56,18 @@ int trans_file(int client_fd, const char * f_name) {
     close(fd);
     return 0;
 }
+
+int cycle_recv(int fd, void * buf, size_t data_length) {
+    size_t len = 0;
+    size_t total_len = 0;
+    char * ptr = (char *) buf;
+    while (total_len < data_length) {
+        len = recv(fd, ptr + total_len, data_length - total_len, 0);
+        total_len += len;
+        if (0 == len) {
+            return -1;
+        }
+    }
+
+    return 0;
+}
