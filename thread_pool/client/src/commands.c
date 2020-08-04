@@ -45,7 +45,18 @@ int analyze_cmd(char * cmd, int fd) {
     return 0;
 }
 
-int cmd_cd(int fd, char * cmd) {
+int cmd_cd(int fd, const char * cmd) {
+    train_t train;
+    memset(&train, 0, sizeof(train));
+
+    train.length = strlen(cmd);
+    memcpy(train.buf, cmd, strlen(cmd));
+    send(fd, &train, sizeof(train.length) + train.length, 0);
+
+    char buf[1 << 10] = {0};
+    recv(fd, buf, sizeof(buf), 0);
+    printf("%s\n", buf);
+
     return 0;
 }
 
@@ -59,7 +70,7 @@ int cmd_pwd(int fd, const char * cmd) {
 
     char path[MAX_PATH_LEN] = {0};
     recv(fd, path, sizeof(path), 0);
-    printf("Path: %s\n", path);
+    printf("%s\n", path);
 
     return 0;
 }

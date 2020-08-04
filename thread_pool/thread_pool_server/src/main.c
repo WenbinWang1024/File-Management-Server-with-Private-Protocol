@@ -16,8 +16,11 @@ int main(int argc, char ** argv) {
     strcpy(cur_path, getcwd(NULL, 0));
     // tcp regist
     int sfd = tcp_regist(argv[1]);
-    // client fd
+    // client info
     int client_fd = -1;
+    struct sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
+    socklen_t addr_len = sizeof(client_addr);
     // thread settings
     const int MAX_THREAD_NO = 3;
     pThread_Pool_t pThread_Pool = (pThread_Pool_t) calloc(1, sizeof(thread_pool_t));
@@ -36,7 +39,12 @@ int main(int argc, char ** argv) {
         int prepared_num = epoll_wait(epfd, event_list, MAX_EVENT_NO, 0);
         for (int i = 0; i < prepared_num; ++i) {
             if (sfd == event_list[i].data.fd) {
-                client_fd = tcp_accept(sfd);
+                client_fd = accept(sfd, (struct sockaddr *) &client_addr, &addr_len);
+                ERROR_CHECK(client_fd, -1, "accept");
+                printf("Client %s:%d successfully connected!\n",
+                       inet_ntoa(client_addr.sin_addr),
+                       ntohs(client_addr.sin_port)
+                      );
                 epoll_add(epfd, client_fd);
             } // if
             if (client_fd == event_list[i].data.fd) {
@@ -44,7 +52,12 @@ int main(int argc, char ** argv) {
                 memset(&train, 0, sizeof(train));
                 ret = cycle_recv(client_fd, &train.length, sizeof(train.length));
                 if (0 == train.length) {
+                    printf("Client %s:%d disconnected!\n",
+                           inet_ntoa(client_addr.sin_addr),
+                           ntohs(client_addr.sin_port)
+                          );
                     epoll_del(epfd, client_fd);
+                    close(client_fd);
                     continue;
                 }
                 ret = cycle_recv(client_fd, &train.buf, train.length);

@@ -12,8 +12,8 @@ CMD_T get_cmd_type(char ** cmd_list, const char * cmd);
 
 int analyze_cmd(char * cmd, int fd);
 
-int cmd_cd(int fd, char * cmd);
+int cmd_cd(int fd, const char * cmd);
 
-int cmd_pwd(int fd,const char * cmd);
+int cmd_pwd(int fd, const char * cmd);
 
 #endif // COMMANDS_H
