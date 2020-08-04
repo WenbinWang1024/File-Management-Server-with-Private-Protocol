@@ -38,12 +38,7 @@ int main(int argc, char ** argv) {
         int prepared_num = epoll_wait(epfd, event_list, MAX_EVENT_NO, 0);
         for (int i = 0; i < prepared_num; ++i) {
             if (sfd == event_list[i].data.fd) {
-                client_fd = accept(sfd, (struct sockaddr *) &client_addr, &addr_len);
-                ERROR_CHECK(client_fd, -1, "accept");
-                printf("Client %s:%d successfully connected!\n",
-                       inet_ntoa(client_addr.sin_addr),
-                       ntohs(client_addr.sin_port)
-                      );
+                client_fd = tcp_accept(sfd);
                 epoll_add(epfd, client_fd);
             } // if
             if (client_fd == event_list[i].data.fd) {
