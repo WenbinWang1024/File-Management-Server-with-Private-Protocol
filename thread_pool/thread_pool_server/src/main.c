@@ -3,6 +3,7 @@
 #include "../head/file_transfer.h"
 #include "../head/epoll_management.h"
 #include "../head/thread_pool.h"
+#include "../head/commands.h"
 
 int main(int argc, char ** argv) {
     // arg format: ./ftpserver ../conf/server.conf
@@ -11,14 +12,11 @@ int main(int argc, char ** argv) {
     /* init zone */
     int ret = 0;
     // current path
-    char * cur_path = getcwd(NULL, 0);
-    ERROR_CHECK(cur_path, NULL, "getcwd");
+    char cur_path[MAX_PATH_LEN] = {0};
+    strcpy(cur_path, getcwd(NULL, 0));
     // tcp regist
     int sfd = tcp_regist(argv[1]);
-    // client info
-    struct sockaddr_in client_addr;
-    memset(&client_addr, 0, sizeof(client_addr));
-    socklen_t addr_len = sizeof(client_addr);
+    // client fd
     int client_fd = -1;
     // thread settings
     const int MAX_THREAD_NO = 3;
@@ -52,6 +50,7 @@ int main(int argc, char ** argv) {
                 ret = cycle_recv(client_fd, &train.buf, train.length);
 
                 /* dealing cmds */
+                analyze_cmd(&train, client_fd, cur_path, pThread_Pool);
 
             } // if
         } // for

@@ -3,7 +3,6 @@
 
 #include "includings.h"
 #include "file_transfer.h"
-#include "thread_pool.h"
 
 #define MAX_CMD_NO 7
 
@@ -11,10 +10,10 @@ typedef enum {INVALID = -1, EMPTY, CD, LS, PUTS, GETS, REMOVE, PWD} CMD_T;
 
 CMD_T get_cmd_type(char ** cmd_list, const char * cmd);
 
-int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Pool);
+int analyze_cmd(char * cmd, int fd);
 
-int cmd_cd(int fd, char * cmd, char * path);
+int cmd_cd(int fd, char * cmd);
 
-int cmd_pwd(int fd, char * path);
+int cmd_pwd(int fd,const char * cmd);
 
 #endif // COMMANDS_H
