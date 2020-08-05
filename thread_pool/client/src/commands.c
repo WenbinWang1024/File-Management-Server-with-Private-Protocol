@@ -70,14 +70,14 @@ int cmd_ls(int fd, const char * cmd) {
     memcpy(train.buf, cmd, strlen(cmd));
     send(fd, &train, sizeof(train.length) + train.length, 0);
 
-    char buf[500];
-    while(1){
-        memset(buf,0,sizeof(buf));
-        recv(fd,buf,sizeof(buf),0);
-        if(buf[0] == '\0'){
+    char buf[1 << 10] = {0};
+    while (1) {
+        memset(buf, 0, sizeof(buf));
+        recv(fd, buf, sizeof(buf), 0);
+        if (buf[0] == '\0') {
             break;
         }
-        printf("%s",buf);
+        printf("%s\n", buf);
     }
 
     return 0;
