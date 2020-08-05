@@ -26,7 +26,7 @@ int analyze_cmd(char * cmd, int fd) {
         cmd_cd(fd, cmd);
         break;
     case LS:
-        cmd_ls(fd,cmd);
+        cmd_ls(fd, cmd);
         break;
     case PUTS:
         break;
