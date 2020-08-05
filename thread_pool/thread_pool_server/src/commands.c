@@ -6,7 +6,7 @@ CMD_T get_cmd_type(char ** cmd_list, const char * cmd) {
             return (CMD_T) i;
         }
     }
-    
+
     return INVALID;
 }
 
@@ -21,6 +21,7 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
         cmd_cd(fd, pTrain->buf, path);
         break;
     case LS:
+        cmd_ls(fd,pTrain->buf,path);
         break;
     case PUTS:
         break;
@@ -57,6 +58,45 @@ int cmd_cd(int fd, char * cmd, char * path) {
         send(fd, path, strlen(path), 0);
     }
 
+    return 0;
+}
+
+int cmd_ls(int fd, char * cmd,char* path){
+    if(!strcpy(cmd,"ls")){
+        return -1;
+    }
+
+    DIR *dirp = opendir(path);
+    ERROR_CHECK(dirp,NULL,"opendir");
+    struct dirent *pdirent;
+    while((pdirent = readdir(dirp)) != NULL){
+        struct stat buf;
+        int ret = stat(pdirent->d_name,&buf);
+        ERROR_CHECK(ret,-1,"stat");
+        char stat[500];
+        memset(stat,0,sizeof(stat));
+        file_type(buf.st_mode,stat);
+        file_power(buf.st_mode,stat);
+        stat[10] = ' ';
+        char stat_buf[500];
+        memset(stat_buf,0,sizeof(stat_buf));
+        sprintf(stat_buf," %ld %s %s %5ld %20s %s"
+               ,buf.st_nlink
+               ,getpwuid(buf.st_uid)->pw_name
+               ,getgrgid(buf.st_gid)->gr_name
+               ,buf.st_size
+               ,pdirent->d_name
+               ,ctime(&buf.st_mtime)
+              );
+        strcat(stat,stat_buf);
+        printf("%s",stat);
+        send(fd,stat,strlen(stat),0);
+    }
+    
+    //结束信号
+    send(fd,"\0",1,0);
+
+    closedir(dirp);
     return 0;
 }
 

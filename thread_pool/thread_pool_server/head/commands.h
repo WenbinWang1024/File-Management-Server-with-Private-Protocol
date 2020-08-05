@@ -5,7 +5,7 @@
 #include "file_transfer.h"
 #include "thread_pool.h"
 
-#define MAX_CMD_NO 7
+#define MAX_CMD_NO 50
 
 typedef enum {INVALID = -1, EMPTY, CD, LS, PUTS, GETS, REMOVE, PWD} CMD_T;
 
@@ -15,6 +15,11 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
 
 int cmd_cd(int fd, char * cmd, char * path);
 
+int cmd_ls(int fd,char* cmd,char* path);
+
 int cmd_pwd(int fd, char * path);
+
+void file_power(mode_t,char*);
+void file_type(mode_t,char*);
 
 #endif // COMMANDS_H
