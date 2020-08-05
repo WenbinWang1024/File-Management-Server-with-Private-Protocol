@@ -13,6 +13,9 @@ int main(int argc, char ** argv) {
     int sfd = tcp_connect(argv[1], atoi(argv[2]));
     // print like bash
     printf("client > ");
+    // command receiving buffer
+    const int MAX_CMD_LEN = 1 << 10;
+    char cmd[MAX_CMD_LEN] = {0};
 
     /* epoll init zone */
     int epfd = epoll_create(1);
@@ -22,9 +25,6 @@ int main(int argc, char ** argv) {
     const int MAX_EVENT_NO = 3;
     struct epoll_event event_list[MAX_EVENT_NO];
     memset(event_list, 0, sizeof(event_list));
-
-    const int MAX_CMD_LEN = 1 << 10;
-    char cmd[MAX_CMD_LEN] = {0};
 
     while (1) {
         fflush(stdout);
