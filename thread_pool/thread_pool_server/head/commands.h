@@ -15,12 +15,12 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
 
 int cmd_cd(int fd, char * cmd, char * path);
 
-int cmd_ls(int fd,char* cmd,char* path);
+int cmd_ls(int fd, char * cmd, char * path);
 
 int cmd_pwd(int fd, char * path);
 
-void file_perm(mode_t, char*);
+void file_perm(mode_t, char *);
 
-void file_type(mode_t, char*);
+void file_type(mode_t, char *);
 
 #endif // COMMANDS_H
