@@ -61,40 +61,40 @@ int cmd_cd(int fd, char * cmd, char * path) {
     return 0;
 }
 
-int cmd_ls(int fd, char * cmd,char* path){
-    if(!strcpy(cmd,"ls")){
+int cmd_ls(int fd, char * cmd, char * path) {
+    if (0 != strcmp(cmd, "ls")) {
         return -1;
     }
 
-    DIR *dirp = opendir(path);
-    ERROR_CHECK(dirp,NULL,"opendir");
-    struct dirent *pdirent;
-    while((pdirent = readdir(dirp)) != NULL){
+    DIR * dirp = opendir(path);
+    ERROR_CHECK(dirp, NULL, "opendir");
+    struct dirent * pDirent;
+    while (NULL != (pDirent = readdir(dirp))) {
         struct stat buf;
-        int ret = stat(pdirent->d_name,&buf);
-        ERROR_CHECK(ret,-1,"stat");
-        char stat[500];
-        memset(stat,0,sizeof(stat));
-        file_type(buf.st_mode,stat);
-        file_power(buf.st_mode,stat);
+        int ret = stat(pDirent->d_name, &buf);
+        ERROR_CHECK(ret, -1, "stat");
+        char stat[1 << 10];
+        memset(stat, 0, sizeof(stat));
+        file_type(buf.st_mode, stat);
+        file_perm(buf.st_mode, stat);
         stat[10] = ' ';
-        char stat_buf[500];
-        memset(stat_buf,0,sizeof(stat_buf));
-        sprintf(stat_buf," %ld %s %s %5ld %20s %s"
-               ,buf.st_nlink
-               ,getpwuid(buf.st_uid)->pw_name
-               ,getgrgid(buf.st_gid)->gr_name
-               ,buf.st_size
-               ,pdirent->d_name
-               ,ctime(&buf.st_mtime)
-              );
-        strcat(stat,stat_buf);
-        printf("%s",stat);
-        send(fd,stat,strlen(stat),0);
+        char stat_buf[1 << 10];
+        memset(stat_buf, 0, sizeof(stat_buf));
+        sprintf(stat_buf," %ld %s %s %5ld %20s %s",
+                buf.st_nlink,
+                getpwuid(buf.st_uid)->pw_name,
+                getgrgid(buf.st_gid)->gr_name,
+                buf.st_size,
+                pDirent->d_name,
+                ctime(&buf.st_mtime)
+               );
+        strcat(stat, stat_buf);
+        printf("%s", stat);
+        send(fd, stat, strlen(stat), 0);
     }
     
-    //结束信号
-    send(fd,"\0",1,0);
+    // 结束信号
+    send(fd, "\0", 1, 0);
 
     closedir(dirp);
     return 0;
