@@ -74,7 +74,7 @@ int cmd_ls(int fd, const char * cmd) {
     while (1) {
         memset(buf, 0, sizeof(buf));
         recv(fd, buf, sizeof(buf), 0);
-        if (buf[0] == '\0') {
+        if ('\0' == buf[0]) {
             break;
         }
         printf("%s\n", buf);

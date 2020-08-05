@@ -4,6 +4,7 @@
 #include "../head/epoll_management.h"
 #include "../head/thread_pool.h"
 #include "../head/commands.h"
+#include "../head/file_info.h"
 
 int main(int argc, char ** argv) {
     // arg format: ./ftpserver ../conf/server.conf
@@ -64,7 +65,6 @@ int main(int argc, char ** argv) {
 
                 /* dealing cmds */
                 analyze_cmd(&train, client_fd, cur_path, pThread_Pool);
-
             } // if
         } // for
     } // while

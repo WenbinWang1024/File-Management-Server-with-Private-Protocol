@@ -19,8 +19,4 @@ int cmd_ls(int fd, char * cmd, char * path);
 
 int cmd_pwd(int fd, char * path);
 
-void file_perm(mode_t mode, char * ret);
-
-void file_type(mode_t mode, char * ret);
-
 #endif // COMMANDS_H
