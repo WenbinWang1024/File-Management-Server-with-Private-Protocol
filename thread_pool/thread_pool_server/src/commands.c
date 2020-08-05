@@ -21,7 +21,7 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
         cmd_cd(fd, pTrain->buf, path);
         break;
     case LS:
-        cmd_ls(fd,pTrain->buf,path);
+        cmd_ls(fd, pTrain->buf, path);
         break;
     case PUTS:
         break;
