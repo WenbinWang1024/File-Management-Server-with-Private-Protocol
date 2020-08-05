@@ -26,6 +26,7 @@ int analyze_cmd(char * cmd, int fd) {
         cmd_cd(fd, cmd);
         break;
     case LS:
+        cmd_ls(fd, cmd);
         break;
     case PUTS:
         break;
@@ -45,6 +46,7 @@ int analyze_cmd(char * cmd, int fd) {
     return 0;
 }
 
+
 int cmd_cd(int fd, const char * cmd) {
     train_t train;
     memset(&train, 0, sizeof(train));
@@ -56,6 +58,27 @@ int cmd_cd(int fd, const char * cmd) {
     char buf[1 << 10] = {0};
     recv(fd, buf, sizeof(buf), 0);
     printf("%s\n", buf);
+
+    return 0;
+}
+
+int cmd_ls(int fd, const char * cmd) {
+    train_t train;
+    memset(&train, 0, sizeof(train));
+
+    train.length = strlen(cmd);
+    memcpy(train.buf, cmd, strlen(cmd));
+    send(fd, &train, sizeof(train.length) + train.length, 0);
+
+    char buf[1 << 10] = {0};
+    while (1) {
+        memset(buf, 0, sizeof(buf));
+        recv(fd, buf, sizeof(buf), 0);
+        if (buf[0] == '\0') {
+            break;
+        }
+        printf("%s\n", buf);
+    }
 
     return 0;
 }
