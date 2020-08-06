@@ -1,23 +1,21 @@
 #include "../head/file_transfer.h"
 
 int trans_file(int client_fd, const char * f_name) {
-   
-    train_t train1;
-    memset(&train1, 0, sizeof(train1));
-    int ret = 0;
-    
-    char path[MAX_PATH_LEN] = {0};
-    sprintf(path, "%s%s", "./", f_name);
-    printf("Path: %s\n", path);
+    train_t train;
+    memset(&train, 0, sizeof(train));
+    int ret = -1;
+
     // send f_name to client
-    train1.length = strlen(path);
-    strcpy(train1.buf, path);
-    ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
-    //printf("ret = %ld\n",sizeof(train1.length));
+    train.length = strlen(f_name);
+    strcpy(train.buf, f_name);
+    ret = send(client_fd, &train, sizeof(train.length) + train.length, 0);
     ERROR_CHECK(ret, -1, "send");
 
     // path
-   
+    char path[MAX_PATH_LEN] = {0};
+    sprintf(path, "%s%s", "./", f_name);
+    printf("Path: %s\n", path);
+
     // check file
     int fd = open(path, O_RDWR);
     int has_file = 1;
@@ -25,34 +23,32 @@ int trans_file(int client_fd, const char * f_name) {
         // file not exists
         // send error info
         has_file = 0;
-        ret=send(client_fd, &has_file, sizeof(has_file), 0);
-        //printf("ret = %d\n",ret);
+        send(client_fd, &has_file, sizeof(has_file), 0);
         return -1;
     }
     else {
-        //ret=send(client_fd, &has_file, sizeof(has_file), 0);
-        printf("check  succeed");
+        send(client_fd, &has_file, sizeof(has_file), 0);
     }
 
     // send file length
     struct stat f_info;
     memset(&f_info, 0, sizeof(f_info));
     fstat(fd, &f_info);
-    train1.length = sizeof(f_info.st_size);
-    memcpy(train1.buf, &f_info.st_size, train1.length);
-    ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
+    train.length = sizeof(f_info.st_size);
+    memcpy(train.buf, &f_info.st_size, train.length);
+    ret = send(client_fd, &train, sizeof(train.length) + train.length, 0);
     ERROR_CHECK(ret, -1, "send");
 
     // send file
     while (1) {
-        ret = read(fd, train1.buf, sizeof(train1.buf));
+        ret = read(fd, train.buf, sizeof(train.buf));
         ERROR_CHECK(ret, -1, "read");
 
-        train1.length = ret;
-        ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
+        train.length = ret;
+        ret = send(client_fd, &train, sizeof(train.length) + train.length, 0);
         ERROR_CHECK(ret, -1, "send");
-        //printf("ret = %d\n",ret);
-        if (0 == train1.length) {
+
+        if (0 == train.length) {
             break;
         }
     }
