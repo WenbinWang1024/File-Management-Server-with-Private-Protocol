@@ -17,6 +17,8 @@ int cmd_cd(int fd, char * cmd, char * path);
 
 int cmd_ls(int fd, char * cmd, char * path);
 
+int cmd_rm(char * cmd);
+
 int cmd_pwd(int fd, char * path);
 
 #endif // COMMANDS_H

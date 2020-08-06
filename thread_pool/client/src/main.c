@@ -39,6 +39,7 @@ int main(int argc, char ** argv) {
 
                 /* analyze cmd */
                 analyze_cmd(cmd, sfd);
+                printf("client > ");
             } // if
             if (sfd == event_list[i].data.fd) {
                 // detect disconnection from server

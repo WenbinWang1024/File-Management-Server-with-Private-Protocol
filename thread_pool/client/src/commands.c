@@ -33,6 +33,7 @@ int analyze_cmd(char * cmd, int fd) {
     case GETS:
         break;
     case REMOVE:
+        cmd_rm(fd, cmd);
         break;
     case PWD:
         cmd_pwd(fd, cmd);
@@ -41,7 +42,6 @@ int analyze_cmd(char * cmd, int fd) {
         printf("Invalid command\n");
         break;
     }
-    printf("client > ");
 
     return 0;
 }
@@ -70,15 +70,36 @@ int cmd_ls(int fd, const char * cmd) {
     memcpy(train.buf, cmd, strlen(cmd));
     send(fd, &train, sizeof(train.length) + train.length, 0);
 
-    char buf[1 << 10] = {0};
     while (1) {
-        memset(buf, 0, sizeof(buf));
-        recv(fd, buf, sizeof(buf), 0);
-        if ('\0' == buf[0]) {
+        memset(&train, 0, sizeof(train));
+        recv(fd, &train, sizeof(train), 0);
+
+        if (0 == train.length) {
             break;
         }
-        printf("%s\n", buf);
+        printf("%s", train.buf);
     }
+
+    return 0;
+}
+
+int cmd_rm(int fd, const char * cmd) {
+    int pos = 0;
+    while (pos < strlen(cmd) && ' ' != cmd[pos])
+        ++pos;
+    while (pos < strlen(cmd) && ' ' == cmd[pos])
+        ++pos;
+    if ('/' == cmd[pos]) {
+        printf("Permission denied!\n");
+        return -1;
+    }
+
+    train_t train;
+    memset(&train, 0, sizeof(train));
+
+    train.length = strlen(cmd);
+    memcpy(train.buf, cmd, strlen(cmd));
+    send(fd, &train, sizeof(train.length) + train.length, 0);
 
     return 0;
 }
