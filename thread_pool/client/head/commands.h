@@ -16,6 +16,8 @@ int cmd_cd(int fd, const char * cmd);
 
 int cmd_ls(int fd, const char * cmd);
 
-int cmd_pwd(int fd, const char * cmd);
+int cmd_rm(int fd, const char * cmd);
 
+int cmd_pwd(int fd, const char * cmd);
+int cmd_gets(char* file_name, int fd, char * cmd);
 #endif // COMMANDS_H

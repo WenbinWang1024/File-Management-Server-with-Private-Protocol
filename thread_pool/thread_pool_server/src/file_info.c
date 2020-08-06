@@ -1,6 +1,6 @@
-#include "../head/commands.h"
+#include "../head/file_info.h"
 //参考 ：https://www.cnblogs.com/usingnamespace-caoliu/p/9351773.html
-void file_perm(mode_t mode,char * ret) {//打印文件权限
+void get_file_perm(mode_t mode,char * ret) {//打印文件权限
     //判断usr权限
     /* printf("%c", mode&S_IRUSR?'r':'-');//S_IRUSR 00400 */
     /* printf("%c", mode&S_IWUSR?'w':'-'); */
@@ -26,7 +26,7 @@ void file_perm(mode_t mode,char * ret) {//打印文件权限
     ret[9] = mode & S_IXOTH ? 'x' : '-';
 }
 
-void file_type(mode_t mode, char * ret) {//打印文件类型
+void get_file_type(mode_t mode, char * ret) {//打印文件类型
     if (S_ISREG(mode)) {
         /* printf("-");//普通文件 */
         ret[0] = '-';
@@ -51,7 +51,7 @@ void file_type(mode_t mode, char * ret) {//打印文件类型
         /* printf("l");//链接文件 */
         ret[0] = 'l';
     }
-    else{
+    else {
         /* printf("s");//socket文件 */
         ret[0] = 's';
     }

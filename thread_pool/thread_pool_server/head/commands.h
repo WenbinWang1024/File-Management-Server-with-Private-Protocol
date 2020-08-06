@@ -17,10 +17,9 @@ int cmd_cd(int fd, char * cmd, char * path);
 
 int cmd_ls(int fd, char * cmd, char * path);
 
+int cmd_rm(char * cmd);
+
 int cmd_pwd(int fd, char * path);
-
-void file_perm(mode_t mode, char * ret);
-
-void file_type(mode_t mode, char * ret);
+int cmd_gets(int cfd, char * cmd);
 
 #endif // COMMANDS_H

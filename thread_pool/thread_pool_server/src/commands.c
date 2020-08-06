@@ -1,4 +1,5 @@
 #include "../head/commands.h"
+#include "../head/file_info.h"
 
 CMD_T get_cmd_type(char ** cmd_list, const char * cmd) {
     for (int i = 1; i < MAX_CMD_NO; ++i) {
@@ -14,7 +15,6 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
     };
-
     CMD_T cmd_type = get_cmd_type(cmd_list, pTrain->buf);
     switch(cmd_type) {
     case CD:
@@ -26,8 +26,10 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
     case PUTS:
         break;
     case GETS:
+        cmd_gets(fd, pTrain->buf);
         break;
     case REMOVE:
+        cmd_rm(pTrain->buf);
         break;
     case PWD:
         cmd_pwd(fd, path);
@@ -68,17 +70,24 @@ int cmd_ls(int fd, char * cmd, char * path) {
 
     DIR * dirp = opendir(path);
     ERROR_CHECK(dirp, NULL, "opendir");
-    struct dirent * pDirent;
+    struct dirent * pDirent = NULL;
+
+    char stat_ret[1 << 10] = {0};
+    char stat_buf[1 << 10] = {0};
+
+    struct stat buf;
+
     while (NULL != (pDirent = readdir(dirp))) {
-        struct stat buf;
+        memset(&buf, 0, sizeof(buf));
+
         int ret = stat(pDirent->d_name, &buf);
         ERROR_CHECK(ret, -1, "stat");
-        char stat[1 << 10];
-        memset(stat, 0, sizeof(stat));
-        file_type(buf.st_mode, stat);
-        file_perm(buf.st_mode, stat);
-        stat[10] = ' ';
-        char stat_buf[1 << 10];
+
+        memset(stat_ret, 0, sizeof(stat_ret));
+        get_file_type(buf.st_mode, stat_ret);
+        get_file_perm(buf.st_mode, stat_ret);
+        stat_ret[10] = ' ';
+
         memset(stat_buf, 0, sizeof(stat_buf));
         sprintf(stat_buf," %ld %s %s %5ld %20s %s",
                 buf.st_nlink,
@@ -88,15 +97,28 @@ int cmd_ls(int fd, char * cmd, char * path) {
                 pDirent->d_name,
                 ctime(&buf.st_mtime)
                );
-        strcat(stat, stat_buf);
-        printf("%s", stat);
-        send(fd, stat, strlen(stat), 0);
+        strcat(stat_ret, stat_buf);
+        send(fd, stat_ret, strlen(stat_ret), 0);
     }
-    
+
     // 结束信号
-    send(fd, "\0", 1, 0);
+    send(fd, "end", 4, 0);
 
     closedir(dirp);
+    return 0;
+}
+
+int cmd_rm(char * cmd) {
+    int pos = 0;
+    while (pos < strlen(cmd) && ' ' != cmd[pos])
+        ++pos;
+    while (pos < strlen(cmd) && ' ' == cmd[pos])
+        ++pos;
+
+    char buf[1 << 10] = {0};
+    sprintf(buf, "%s %s", "rm -r", cmd + pos);
+    system(buf);
+
     return 0;
 }
 
@@ -106,5 +128,24 @@ int cmd_pwd(int fd, char * path) {
     strcpy(path, wd);
     send(fd, path, strlen(path), 0);
 
+    return 0;
+}
+int cmd_gets(int cfd, char * cmd)
+{
+    int ret=0;
+    train_t trainname;
+    memset(&trainname, 0, sizeof(trainname));
+    cycle_recv(cfd, &trainname.length, sizeof(trainname.length));
+    cycle_recv(cfd,&trainname.buf,trainname.length);
+    //printf("buf = %s\n",trainname.buf);
+    ret=trans_file(cfd, trainname.buf);
+    if(ret==-1){
+    char path[1<<10] = {0};    
+    train_t train1;
+    memset(&train1, 0, sizeof(train1));
+    train1.length = 1024;
+    strcpy(train1.buf, path);
+    ret = send(cfd, &train1, sizeof(train1.length) + train1.length, 0);
+    }
     return 0;
 }
