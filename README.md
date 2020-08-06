@@ -2,7 +2,7 @@
 
 ## Phase I
 
-Realize the Internet connection between the server and clients. Start the server and client by typing `./ftpserver ../conf/server.conf` and `./client [ip] [port]` on bash respectively.
+In this phase, the Internet connection between the server and client is realized. Start the server and client by typing `./ftpserver ../conf/server.conf` and `./client [ip] [port]` on bash respectively.
 
 In Phase I, the client provides more than six clauses similar to bash commands. The fundamental commands are listed as below:
 
