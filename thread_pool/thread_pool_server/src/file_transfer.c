@@ -2,8 +2,8 @@
 
 int trans_file(int client_fd, const char * f_name) {
    
-    train_t train1;
-    memset(&train1, 0, sizeof(train1));
+    train_t train_dir;
+    memset(&train_dir, 0, sizeof(train_dir));
     int ret = 0;
     char path[MAX_PATH_LEN] = {0};
     sprintf(path, "%s%s", "./", f_name);
@@ -28,31 +28,31 @@ int trans_file(int client_fd, const char * f_name) {
     
     //printf("Path: %s\n", path);
     // send f_name to client
-    train1.length = strlen(path);
-    strcpy(train1.buf, path);
-    ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
-    //printf("ret = %ld\n",sizeof(train1.length));
+    train_dir.length = strlen(path);
+    strcpy(train_dir.buf, path);
+    ret = send(client_fd, &train_dir, sizeof(train_dir.length) + train_dir.length, 0);
+    //printf("ret = %ld\n",sizeof(train_dir.length));
     ERROR_CHECK(ret, -1, "send");
 
     // send file length
     struct stat f_info;
     memset(&f_info, 0, sizeof(f_info));
     fstat(fd, &f_info);
-    train1.length = sizeof(f_info.st_size);
-    memcpy(train1.buf, &f_info.st_size, train1.length);
-    ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
+    train_dir.length = sizeof(f_info.st_size);
+    memcpy(train_dir.buf, &f_info.st_size, train_dir.length);
+    ret = send(client_fd, &train_dir, sizeof(train_dir.length) + train_dir.length, 0);
     ERROR_CHECK(ret, -1, "send");
 
     // send file
     while (1) {
-        ret = read(fd, train1.buf, sizeof(train1.buf));
+        ret = read(fd, train_dir.buf, sizeof(train_dir.buf));
         ERROR_CHECK(ret, -1, "read");
 
-        train1.length = ret;
-        ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
+        train_dir.length = ret;
+        ret = send(client_fd, &train_dir, sizeof(train_dir.length) + train_dir.length, 0);
         ERROR_CHECK(ret, -1, "send");
         //printf("ret = %d\n",ret);
-        if (0 == train1.length) {
+        if (0 == train_dir.length) {
             break;
         }
     }
