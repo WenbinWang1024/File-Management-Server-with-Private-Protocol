@@ -15,7 +15,8 @@ int main(int argc, char ** argv) {
     printf("client > ");
     // command receiving buffer
     const int MAX_CMD_LEN = 1 << 10;
-    char cmd[MAX_CMD_LEN] = {0};
+    char cmd[MAX_CMD_LEN];
+    memset(cmd, 0, sizeof(cmd));
 
     /* epoll init zone */
     int epfd = epoll_create(1);

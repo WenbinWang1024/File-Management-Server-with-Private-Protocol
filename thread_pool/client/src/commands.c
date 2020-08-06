@@ -17,7 +17,9 @@ int analyze_cmd(char * cmd, int fd) {
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
     };
-    char file_name[1<<10]={0};
+
+    char file_name[1 << 10] = {0};
+
     CMD_T cmd_type = get_cmd_type(cmd_list, cmd);
     switch(cmd_type) {
     case EMPTY:
@@ -31,11 +33,11 @@ int analyze_cmd(char * cmd, int fd) {
     case PUTS:
         break;
     case GETS:
-        for(int j=4;j<strlen(cmd);++j){
-            file_name[j-4]=cmd[j];
+        for(int j = 4;j < strlen(cmd); ++j){
+            file_name[j - 4] = cmd[j];
         }
         //printf("file_name=%s\n",file_name);
-        cmd_gets(file_name,fd,cmd);
+        cmd_gets(fd, cmd, file_name);
         break;
     case REMOVE:
         cmd_rm(fd, cmd);
@@ -90,6 +92,66 @@ int cmd_ls(int fd, const char * cmd) {
     return 0;
 }
 
+int cmd_gets(int fd, char * cmd, char * file_name) {
+    train_t train;
+    memset(&train, 0, sizeof(train));
+    train.length = strlen(cmd);
+    memcpy(train.buf, cmd, strlen(cmd));
+    send(fd, &train, sizeof(train.length) + train.length, 0);
+    //发送命令
+    train_t train_pn;
+    memset(&train_pn, 0, sizeof(train_pn));
+    train_pn.length = strlen(file_name);
+    memcpy(train_pn.buf, file_name, strlen(file_name));
+    send(fd, &train_pn, sizeof(train_pn.length) + train_pn.length, 0);
+    //发送传输文件名
+
+    train_t train_gn;
+    memset(&train_gn, 0, sizeof(train_gn));
+    train_t train_tradir;
+    memset(&train_tradir, 0, sizeof(train_tradir));
+    int ret=0;
+    ret=cycle_recv(fd,&train_gn.length,sizeof(train_gn.length));
+    ERROR_CHECK(ret,-1,"recvname");
+    if(train_gn.length==1024){
+        printf("file not exists\n");
+        return 0;
+    }
+    //printf("ret = %ld\n",train_gn.length);
+    //得到文件名
+    ret = cycle_recv(fd,&train_gn.buf,train_gn.length);
+    ERROR_CHECK(ret,-1,"recvname");
+    //printf("ret = %s\n",train_gn.buf);
+
+    int serverfd = open(train_gn.buf,O_RDWR|O_CREAT,0666);
+    ERROR_CHECK(serverfd,-1,"open");
+
+    //2.接收文件内容，写到文件中
+    //每次接收数据时都要先接火车头
+    //对于大文件，循环接收，循环写文件
+    while(1)
+    {
+        //先接4个字节的控制信息
+        cycle_recv(fd,&train_tradir.length,sizeof(train_tradir.length));
+        ERROR_CHECK(ret,-1,"recvlen");
+        //printf("datalen=%ld\n",train_tradir.length);
+        //接收到的dataLen等于0时，
+        //代表文件传输结束，退出循环
+        if(0 == train_tradir.length){
+            break;}
+        ret = recv(fd,&train_tradir.buf,train_tradir.length,0);
+        //printf("ret=%d\n",ret);
+        //printf("buf = %s\n",train_tradir.buf);
+        ERROR_CHECK(ret,-1,"recv");
+        ret=write(serverfd,train_tradir.buf,train_tradir.length);
+        //printf("writeret=%d\n",ret);
+    }
+    printf("success\n");
+    close(serverfd);
+    return 0;
+}
+
+
 int cmd_rm(int fd, const char * cmd) {
     int pos = 0;
     while (pos < strlen(cmd) && ' ' != cmd[pos])
@@ -125,64 +187,3 @@ int cmd_pwd(int fd, const char * cmd) {
 
     return 0;
 }
-
-int cmd_gets(char *file_name,int fd, char * cmd)
-{
-    train_t train;
-    memset(&train, 0, sizeof(train));
-    train.length = strlen(cmd);
-    memcpy(train.buf, cmd, strlen(cmd));
-    send(fd, &train, sizeof(train.length) + train.length, 0);
-    //发送命令
-    train_t trainname;
-    memset(&trainname, 0, sizeof(trainname));
-    trainname.length = strlen(file_name);
-    memcpy(trainname.buf, file_name, strlen(file_name));
-    send(fd, &trainname, sizeof(trainname.length) + trainname.length, 0);
-    //发送传输文件名
-
-    train_t trainnew;
-    memset(&trainnew, 0, sizeof(trainnew));
-    train_t train12;
-    memset(&train12, 0, sizeof(train12));
-    int ret=0;
-    ret=cycle_recv(fd,&trainnew.length,sizeof(trainnew.length));
-    ERROR_CHECK(ret,-1,"recvname");
-    if(trainnew.length==1024){
-        printf("file not exists");
-        return 0;
-    }
-    //printf("ret = %ld\n",trainnew.length);
-    //得到文件名
-    ret = cycle_recv(fd,&trainnew.buf,trainnew.length);
-    ERROR_CHECK(ret,-1,"recvname");
-    //printf("ret = %s\n",trainnew.buf);
-
-    int serverfd = open(trainnew.buf,O_RDWR|O_CREAT,0666);
-    ERROR_CHECK(serverfd,-1,"open");
-
-    //2.接收文件内容，写到文件中
-    //每次接收数据时都要先接火车头
-    //对于大文件，循环接收，循环写文件
-    while(1)
-    {
-        //先接4个字节的控制信息
-        cycle_recv(fd,&train12.length,sizeof(train12.length));
-        ERROR_CHECK(ret,-1,"recvlen");
-        //printf("datalen=%ld\n",train12.length);
-        //接收到的dataLen等于0时，
-        //代表文件传输结束，退出循环
-        if(0 == train12.length){
-            break;}
-        ret = recv(fd,&train12.buf,train12.length,0);
-        //printf("ret=%d\n",ret);
-        //printf("buf = %s\n",train12.buf);
-        ERROR_CHECK(ret,-1,"recv");
-        ret=write(serverfd,train12.buf,train12.length);
-        //printf("writeret=%d\n",ret);
-    }
-    printf("success\n");
-    close(serverfd);
-    return 0;
-}
-
