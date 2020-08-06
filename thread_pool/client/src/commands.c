@@ -17,7 +17,9 @@ int analyze_cmd(char * cmd, int fd) {
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
     };
-    char file_name[1<<10]={0};
+
+    char file_name[1 << 10] = {0};
+
     CMD_T cmd_type = get_cmd_type(cmd_list, cmd);
     switch(cmd_type) {
     case EMPTY:
@@ -31,11 +33,11 @@ int analyze_cmd(char * cmd, int fd) {
     case PUTS:
         break;
     case GETS:
-        for(int j=4;j<strlen(cmd);++j){
-            file_name[j-4]=cmd[j];
+        for(int j = 4;j < strlen(cmd); ++j){
+            file_name[j - 4] = cmd[j];
         }
         //printf("file_name=%s\n",file_name);
-        cmd_gets(file_name,fd,cmd);
+        cmd_gets(fd, cmd, file_name);
         break;
     case REMOVE:
         cmd_rm(fd, cmd);
