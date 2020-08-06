@@ -38,6 +38,7 @@ int analyze_cmd(char * cmd, int fd) {
         cmd_gets(file_name,fd,cmd);
         break;
     case REMOVE:
+        cmd_rm(fd, cmd);
         break;
     case PWD:
         cmd_pwd(fd, cmd);
@@ -46,7 +47,6 @@ int analyze_cmd(char * cmd, int fd) {
         printf("Invalid command\n");
         break;
     }
-    printf("client > ");
 
     return 0;
 }
@@ -78,33 +78,19 @@ int cmd_ls(int fd, const char * cmd) {
     char buf[1 << 10] = {0};
     while (1) {
         memset(buf, 0, sizeof(buf));
-        recv(fd, buf, sizeof(buf), 0);
-        if ('\0' == buf[0]) {
+        int ret = recv(fd, buf, sizeof(buf), 0);
+        ERROR_CHECK(ret, -1, "recv");
+
+        if (0 == strcmp("end", buf)) {
             break;
         }
-        printf("%s\n", buf);
+        printf("%s", buf);
     }
 
     return 0;
 }
 
-int cmd_pwd(int fd, const char * cmd) {
-    train_t train;
-    memset(&train, 0, sizeof(train));
-
-    train.length = strlen(cmd);
-    memcpy(train.buf, cmd, strlen(cmd));
-    send(fd, &train, sizeof(train.length) + train.length, 0);
-
-    char path[MAX_PATH_LEN] = {0};
-    recv(fd, path, sizeof(path), 0);
-    printf("%s\n", path);
-
-    return 0;
-}
-
-int cmd_gets(char *file_name,int fd, char * cmd)
-{
+int cmd_gets(int fd, char * cmd, char * file_name) {
     train_t train;
     memset(&train, 0, sizeof(train));
     train.length = strlen(cmd);
@@ -163,3 +149,39 @@ int cmd_gets(char *file_name,int fd, char * cmd)
     return 0;
 }
 
+
+int cmd_rm(int fd, const char * cmd) {
+    int pos = 0;
+    while (pos < strlen(cmd) && ' ' != cmd[pos])
+        ++pos;
+    while (pos < strlen(cmd) && ' ' == cmd[pos])
+        ++pos;
+    if ('/' == cmd[pos]) {
+        printf("Permission denied!\n");
+        return -1;
+    }
+
+    train_t train;
+    memset(&train, 0, sizeof(train));
+
+    train.length = strlen(cmd);
+    memcpy(train.buf, cmd, strlen(cmd));
+    send(fd, &train, sizeof(train.length) + train.length, 0);
+
+    return 0;
+}
+
+int cmd_pwd(int fd, const char * cmd) {
+    train_t train;
+    memset(&train, 0, sizeof(train));
+
+    train.length = strlen(cmd);
+    memcpy(train.buf, cmd, strlen(cmd));
+    send(fd, &train, sizeof(train.length) + train.length, 0);
+
+    char path[MAX_PATH_LEN] = {0};
+    recv(fd, path, sizeof(path), 0);
+    printf("%s\n", path);
+
+    return 0;
+}

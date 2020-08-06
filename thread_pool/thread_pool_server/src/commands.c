@@ -29,6 +29,7 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
         cmd_gets(fd, pTrain->buf);
         break;
     case REMOVE:
+        cmd_rm(pTrain->buf);
         break;
     case PWD:
         cmd_pwd(fd, path);
@@ -69,13 +70,16 @@ int cmd_ls(int fd, char * cmd, char * path) {
 
     DIR * dirp = opendir(path);
     ERROR_CHECK(dirp, NULL, "opendir");
-    struct dirent * pDirent;
+    struct dirent * pDirent = NULL;
 
     char stat_ret[1 << 10] = {0};
     char stat_buf[1 << 10] = {0};
 
+    struct stat buf;
+
     while (NULL != (pDirent = readdir(dirp))) {
-        struct stat buf;
+        memset(&buf, 0, sizeof(buf));
+
         int ret = stat(pDirent->d_name, &buf);
         ERROR_CHECK(ret, -1, "stat");
 
@@ -96,11 +100,44 @@ int cmd_ls(int fd, char * cmd, char * path) {
         strcat(stat_ret, stat_buf);
         send(fd, stat_ret, strlen(stat_ret), 0);
     }
-    
+
     // 结束信号
-    send(fd, "\0", 1, 0);
+    send(fd, "end", 4, 0);
 
     closedir(dirp);
+    return 0;
+}
+
+int cmd_gets(int fd, char * cmd) {
+    int ret = 0;
+    train_t train_name;
+    memset(&train_name, 0, sizeof(train_name));
+    cycle_recv(fd, &train_name.length, sizeof(train_name.length));
+    cycle_recv(fd, &train_name.buf, train_name.length);
+    //printf("buf = %s\n",train_name.buf);
+    ret = trans_file(fd, train_name.buf);
+    if (-1 == ret) {
+        char path[1 << 10] = {0};    
+        train_t train_judge;
+        memset(&train_judge, 0, sizeof(train_judge));
+        train_judge.length = 1024;
+        strcpy(train_judge.buf, path);
+        ret = send(fd, &train_judge, sizeof(train_judge.length) + train_judge.length, 0);
+    }
+    return 0;
+}
+
+int cmd_rm(char * cmd) {
+    int pos = 0;
+    while (pos < strlen(cmd) && ' ' != cmd[pos])
+        ++pos;
+    while (pos < strlen(cmd) && ' ' == cmd[pos])
+        ++pos;
+
+    char buf[1 << 10] = {0};
+    sprintf(buf, "%s %s", "rm -r", cmd + pos);
+    system(buf);
+
     return 0;
 }
 
@@ -110,24 +147,5 @@ int cmd_pwd(int fd, char * path) {
     strcpy(path, wd);
     send(fd, path, strlen(path), 0);
 
-    return 0;
-}
-int cmd_gets(int cfd, char * cmd)
-{
-    int ret=0;
-    train_t train_name;
-    memset(&train_name, 0, sizeof(train_name));
-    cycle_recv(cfd, &train_name.length, sizeof(train_name.length));
-    cycle_recv(cfd,&train_name.buf,train_name.length);
-    //printf("buf = %s\n",train_name.buf);
-    ret=trans_file(cfd, train_name.buf);
-    if(ret==-1){
-    char path[1<<10] = {0};    
-    train_t train_judge;
-    memset(&train_judge, 0, sizeof(train_judge));
-    train_judge.length = 1024;
-    strcpy(train_judge.buf, path);
-    ret = send(cfd, &train_judge, sizeof(train_judge.length) + train_judge.length, 0);
-    }
     return 0;
 }
