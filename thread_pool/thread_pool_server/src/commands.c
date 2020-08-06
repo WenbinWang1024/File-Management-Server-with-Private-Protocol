@@ -15,7 +15,6 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
     };
-
     CMD_T cmd_type = get_cmd_type(cmd_list, pTrain->buf);
     switch(cmd_type) {
     case CD:
@@ -27,6 +26,7 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
     case PUTS:
         break;
     case GETS:
+        cmd_gets(fd, pTrain->buf);
         break;
     case REMOVE:
         break;
@@ -110,5 +110,16 @@ int cmd_pwd(int fd, char * path) {
     strcpy(path, wd);
     send(fd, path, strlen(path), 0);
 
+    return 0;
+}
+int cmd_gets(int cfd, char * cmd)
+{
+    
+    train_t trainname;
+    memset(&trainname, 0, sizeof(trainname));
+    cycle_recv(cfd, &trainname.length, sizeof(trainname.length));
+    cycle_recv(cfd,&trainname.buf,trainname.length);
+    printf("buf = %s\n",trainname.buf);
+    trans_file(cfd, trainname.buf);
     return 0;
 }
