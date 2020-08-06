@@ -17,7 +17,7 @@ int analyze_cmd(char * cmd, int fd) {
     char * cmd_list[MAX_CMD_NO] = {
         "", "cd", "ls", "puts", "gets", "remove", "pwd"
     };
-    char file_name[]="a.txt";
+    char file_name[1<<10]={0};
     CMD_T cmd_type = get_cmd_type(cmd_list, cmd);
     switch(cmd_type) {
     case EMPTY:
@@ -31,6 +31,10 @@ int analyze_cmd(char * cmd, int fd) {
     case PUTS:
         break;
     case GETS:
+        for(int j=4;j<strlen(cmd);++j){
+            file_name[j-4]=cmd[j];
+        }
+        //printf("file_name=%s\n",file_name);
         cmd_gets(file_name,fd,cmd);
         break;
     case REMOVE:
@@ -121,8 +125,12 @@ int cmd_gets(char *file_name,int fd, char * cmd)
     int ret=0;
     ret=cycle_recv(fd,&trainnew.length,sizeof(trainnew.length));
     ERROR_CHECK(ret,-1,"recvname");
+    if(trainnew.length==1024){
+        printf("file not exists");
+        return 0;
+    }
     //printf("ret = %ld\n",trainnew.length);
-    //得到文件名（其实用之前的也可以，但为了避免创建空余文件）
+    //得到文件名
     ret = cycle_recv(fd,&trainnew.buf,trainnew.length);
     ERROR_CHECK(ret,-1,"recvname");
     //printf("ret = %s\n",trainnew.buf);
@@ -148,7 +156,7 @@ int cmd_gets(char *file_name,int fd, char * cmd)
         //printf("buf = %s\n",train12.buf);
         ERROR_CHECK(ret,-1,"recv");
         ret=write(serverfd,train12.buf,train12.length);
-        printf("writeret=%d\n",ret);
+        //printf("writeret=%d\n",ret);
     }
     printf("success\n");
     close(serverfd);

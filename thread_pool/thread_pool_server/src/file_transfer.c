@@ -5,34 +5,34 @@ int trans_file(int client_fd, const char * f_name) {
     train_t train1;
     memset(&train1, 0, sizeof(train1));
     int ret = 0;
-    
     char path[MAX_PATH_LEN] = {0};
     sprintf(path, "%s%s", "./", f_name);
-    printf("Path: %s\n", path);
+    // check file
+    int fd = open(path, O_RDWR);
+    //int has_file = 1;
+    //printf("fd=%d",fd);
+    if (fd == -1) {
+        // file not exists
+        // send error info
+        //has_file = 0;
+        //ret=send(client_fd, &has_file, sizeof(has_file), 0);
+        printf("file not exists\n");
+        return -1;
+        
+    }
+    else {
+        //ret=send(client_fd, &has_file, sizeof(has_file), 0);
+        printf("check  succeed\n");
+    }
+    //path
+    
+    //printf("Path: %s\n", path);
     // send f_name to client
     train1.length = strlen(path);
     strcpy(train1.buf, path);
     ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
     //printf("ret = %ld\n",sizeof(train1.length));
     ERROR_CHECK(ret, -1, "send");
-
-    // path
-   
-    // check file
-    int fd = open(path, O_RDWR);
-    int has_file = 1;
-    if (-1 == fd) {
-        // file not exists
-        // send error info
-        has_file = 0;
-        ret=send(client_fd, &has_file, sizeof(has_file), 0);
-        //printf("ret = %d\n",ret);
-        return -1;
-    }
-    else {
-        //ret=send(client_fd, &has_file, sizeof(has_file), 0);
-        printf("check  succeed");
-    }
 
     // send file length
     struct stat f_info;
