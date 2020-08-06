@@ -76,10 +76,8 @@ int cmd_ls(int fd, char * cmd, char * path) {
     char stat_buf[1 << 10] = {0};
 
     struct stat buf;
-    train_t train;
 
     while (NULL != (pDirent = readdir(dirp))) {
-        memset(&train, 0, sizeof(train));
         memset(&buf, 0, sizeof(buf));
 
         int ret = stat(pDirent->d_name, &buf);
@@ -100,15 +98,11 @@ int cmd_ls(int fd, char * cmd, char * path) {
                 ctime(&buf.st_mtime)
                );
         strcat(stat_ret, stat_buf);
-
-        train.length = strlen(stat_ret);
-        memcpy(train.buf, stat_ret, strlen(stat_ret));
-        send(fd, &train, sizeof(train.length) + train.length, 0);
+        send(fd, stat_ret, strlen(stat_ret), 0);
     }
 
     // 结束信号
-    memset(&train, 0, sizeof(train));
-    send(fd, &train, sizeof(train.length) + train.length, 0);
+    send(fd, "end", 4, 0);
 
     closedir(dirp);
     return 0;

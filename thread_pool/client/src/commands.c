@@ -70,14 +70,16 @@ int cmd_ls(int fd, const char * cmd) {
     memcpy(train.buf, cmd, strlen(cmd));
     send(fd, &train, sizeof(train.length) + train.length, 0);
 
+    char buf[1 << 10] = {0};
     while (1) {
-        memset(&train, 0, sizeof(train));
-        recv(fd, &train, sizeof(train), 0);
+        memset(buf, 0, sizeof(buf));
+        int ret = recv(fd, buf, sizeof(buf), 0);
+        ERROR_CHECK(ret, -1, "recv");
 
-        if (0 == train.length) {
+        if (0 == strcmp("end", buf)) {
             break;
         }
-        printf("%s", train.buf);
+        printf("%s", buf);
     }
 
     return 0;
