@@ -76,7 +76,7 @@ int cycle_recv(int fd, void * buf, size_t data_length) {
     return 0;
 }
 
-int file_puts(int client_fd ,char* path){
+int file_puts(int client_fd , char * path) {
     int fd;
     train_t train;
     memset(&train, 0, sizeof(train));

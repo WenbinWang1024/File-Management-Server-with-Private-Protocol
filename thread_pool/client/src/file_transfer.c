@@ -72,8 +72,8 @@ int cycle_recv(int fd, void * buf, size_t data_length) {
     return 0;
 }
 
-int file_puts(int client_fd,char *filename){//上传
-    int fd = open(filename, O_RDWR);
+int file_puts(int client_fd, char * f_name) {//上传
+    int fd = open(f_name, O_RDWR);
     ERROR_CHECK(fd, -1, "open");
 
     train_t train;
@@ -81,10 +81,10 @@ int file_puts(int client_fd,char *filename){//上传
     int ret = 0;
 
     //发送文件名
-    train.length = strlen(filename);
-    strcpy(train.buf, filename);
+    train.length = strlen(f_name);
+    strcpy(train.buf, f_name);
     send(client_fd, &train, sizeof(train.length) + train.length, 0);
-    ERROR_CHECK(ret, -1, "send filename");
+    ERROR_CHECK(ret, -1, "send f_name");
 
     //发送文件大小
     struct stat fileInfo;
@@ -94,7 +94,7 @@ int file_puts(int client_fd,char *filename){//上传
     memcpy(train.buf, &fileInfo.st_size, train.length);
     ret = send(client_fd, &train, sizeof(train.length) + train.length, 0);
     /* ret = send(client_fd,&train.buf,train.length,0); */
-    ERROR_CHECK(ret, -1, "send filesize");
+    ERROR_CHECK(ret, -1, "send f_size");
     /* printf("%ld %ld\n",train.length,fileInfo.st_size); */
 
     //读取文件内容并发送

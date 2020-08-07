@@ -93,7 +93,7 @@ int cmd_ls(int fd, const char * cmd) {
     return 0;
 }
 
-int cmd_puts(int fd,const char * buf){
+int cmd_puts(int fd, const char * buf) {
     train_t train;
     memset(&train, 0, sizeof(train));
 
@@ -105,10 +105,10 @@ int cmd_puts(int fd,const char * buf){
 
     char cmd[100] = {0};
     char filename[100] = {0};
-    sscanf(buf,"%s%s",cmd,filename);
+    sscanf(buf, "%s%s", cmd, filename);
     file_puts(fd,filename);
-    return 0;
 
+    return 0;
 }
 
 
@@ -131,39 +131,38 @@ int cmd_gets(int fd, char * cmd, char * file_name) {
     train_t train_tradir;
     memset(&train_tradir, 0, sizeof(train_tradir));
     int ret=0;
-    ret=cycle_recv(fd,&train_gn.length,sizeof(train_gn.length));
-    ERROR_CHECK(ret,-1,"recvname");
-    if(train_gn.length==1024){
+    ret = cycle_recv(fd, &train_gn.length, sizeof(train_gn.length));
+    ERROR_CHECK(ret, -1, "recvname");
+    if (train_gn.length == 1024) {
         printf("file not exists\n");
         return 0;
     }
     //printf("ret = %ld\n",train_gn.length);
     //得到文件名
-    ret = cycle_recv(fd,&train_gn.buf,train_gn.length);
-    ERROR_CHECK(ret,-1,"recvname");
+    ret = cycle_recv(fd, &train_gn.buf, train_gn.length);
+    ERROR_CHECK(ret, -1, "recvname");
     //printf("ret = %s\n",train_gn.buf);
 
-    int serverfd = open(train_gn.buf,O_RDWR|O_CREAT,0666);
-    ERROR_CHECK(serverfd,-1,"open");
+    int serverfd = open(train_gn.buf, O_RDWR | O_CREAT, 0666);
+    ERROR_CHECK(serverfd, -1, "open");
 
     //2.接收文件内容，写到文件中
     //每次接收数据时都要先接火车头
     //对于大文件，循环接收，循环写文件
-    while(1)
-    {
+    while (1) {
         //先接4个字节的控制信息
-        cycle_recv(fd,&train_tradir.length,sizeof(train_tradir.length));
-        ERROR_CHECK(ret,-1,"recvlen");
+        cycle_recv(fd, &train_tradir.length, sizeof(train_tradir.length));
+        ERROR_CHECK(ret, -1, "recvlen");
         //printf("datalen=%ld\n",train_tradir.length);
         //接收到的dataLen等于0时，
         //代表文件传输结束，退出循环
-        if(0 == train_tradir.length){
+        if (0 == train_tradir.length) {
             break;}
-        ret = recv(fd,&train_tradir.buf,train_tradir.length,0);
+        ret = recv(fd, &train_tradir.buf, train_tradir.length, 0);
         //printf("ret=%d\n",ret);
         //printf("buf = %s\n",train_tradir.buf);
-        ERROR_CHECK(ret,-1,"recv");
-        ret=write(serverfd,train_tradir.buf,train_tradir.length);
+        ERROR_CHECK(ret, -1, "recv");
+        ret = write(serverfd, train_tradir.buf, train_tradir.length);
         //printf("writeret=%d\n",ret);
     }
     printf("success\n");
