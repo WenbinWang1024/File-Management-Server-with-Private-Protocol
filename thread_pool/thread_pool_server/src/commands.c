@@ -84,7 +84,7 @@ int cmd_ls(int fd, char * cmd, char * path) {
 
     while (NULL != (pDirent = readdir(dirp))) {
         memset(&buf, 0, sizeof(buf));
-        memset(&train,0,sizeof(train));
+        memset(&train, 0, sizeof(train));
 
         int ret = stat(pDirent->d_name, &buf);
         ERROR_CHECK(ret, -1, "stat");
@@ -106,16 +106,36 @@ int cmd_ls(int fd, char * cmd, char * path) {
         strcat(stat_ret, stat_buf);
 
         train.length = strlen(stat_ret);
-        strcpy(train.buf,stat_ret);
+        strcpy(train.buf, stat_ret);
 
-        send(fd, &train, sizeof(train.length)+train.length, 0);
+        send(fd, &train, sizeof(train.length) + train.length, 0);
     }
 
     // 结束信号
     train.length = 0;
-    send(fd, &train,sizeof(train.length),0);
+    send(fd, &train, sizeof(train.length), 0);
 
     closedir(dirp);
+    return 0;
+}
+
+int cmd_gets(int fd, char * cmd)
+{
+    int ret = 0;
+    train_t trainname;
+    memset(&trainname, 0, sizeof(trainname));
+    cycle_recv(fd, &trainname.length, sizeof(trainname.length));
+    cycle_recv(fd, &trainname.buf, trainname.length);
+    //printf("buf = %s\n",trainname.buf);
+    ret=trans_file(fd, trainname.buf);
+    if (-1 == ret) {
+        char path[1 << 10] = {0};    
+        train_t train1;
+        memset(&train1, 0, sizeof(train1));
+        train1.length = 1024;
+        strcpy(train1.buf, path);
+        ret = send(fd, &train1, sizeof(train1.length) + train1.length, 0);
+    }
     return 0;
 }
 
@@ -139,24 +159,5 @@ int cmd_pwd(int fd, char * path) {
     strcpy(path, wd);
     send(fd, path, strlen(path), 0);
 
-    return 0;
-}
-int cmd_gets(int cfd, char * cmd)
-{
-    int ret=0;
-    train_t trainname;
-    memset(&trainname, 0, sizeof(trainname));
-    cycle_recv(cfd, &trainname.length, sizeof(trainname.length));
-    cycle_recv(cfd,&trainname.buf,trainname.length);
-    //printf("buf = %s\n",trainname.buf);
-    ret=trans_file(cfd, trainname.buf);
-    if(ret==-1){
-    char path[1<<10] = {0};    
-    train_t train1;
-    memset(&train1, 0, sizeof(train1));
-    train1.length = 1024;
-    strcpy(train1.buf, path);
-    ret = send(cfd, &train1, sizeof(train1.length) + train1.length, 0);
-    }
     return 0;
 }
