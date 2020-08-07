@@ -125,7 +125,7 @@ int cmd_gets(int fd, char * cmd) {
     memset(&train_name, 0, sizeof(train_name));
     cycle_recv(fd, &train_name.length, sizeof(train_name.length));
     cycle_recv(fd, &train_name.buf, train_name.length);
-    //printf("buf = %s\n",trainname.buf);
+    //printf("buf = %s\n",train_name.buf);
     ret = trans_file(fd, train_name.buf);
     if (-1 == ret) {
         char path[1 << 10] = {0};    
