@@ -2,8 +2,8 @@
 
 int trans_file(int client_fd, const char * f_name) {
 
-    train_t train_dir;
-    memset(&train_dir, 0, sizeof(train_dir));
+    train_t train1;
+    memset(&train1, 0, sizeof(train1));
     int ret = 0;
     char path[MAX_PATH_LEN] = {0};
     sprintf(path, "%s%s", "./", f_name);
@@ -11,7 +11,7 @@ int trans_file(int client_fd, const char * f_name) {
     int fd = open(path, O_RDWR);
     //int has_file = 1;
     //printf("fd=%d",fd);
-    if (fd == -1) {
+    if (-1 == fd) {
         // file not exists
         // send error info
         //has_file = 0;
@@ -28,31 +28,31 @@ int trans_file(int client_fd, const char * f_name) {
 
     //printf("Path: %s\n", path);
     // send f_name to client
-    train_dir.length = strlen(path);
-    strcpy(train_dir.buf, path);
-    ret = send(client_fd, &train_dir, sizeof(train_dir.length) + train_dir.length, 0);
-    //printf("ret = %ld\n",sizeof(train_dir.length));
+    train1.length = strlen(path);
+    strcpy(train1.buf, path);
+    ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
+    //printf("ret = %ld\n",sizeof(train1.length));
     ERROR_CHECK(ret, -1, "send");
 
     // send file length
     struct stat f_info;
     memset(&f_info, 0, sizeof(f_info));
     fstat(fd, &f_info);
-    train_dir.length = sizeof(f_info.st_size);
-    memcpy(train_dir.buf, &f_info.st_size, train_dir.length);
-    ret = send(client_fd, &train_dir, sizeof(train_dir.length) + train_dir.length, 0);
+    train1.length = sizeof(f_info.st_size);
+    memcpy(train1.buf, &f_info.st_size, train1.length);
+    ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
     ERROR_CHECK(ret, -1, "send");
 
     // send file
     while (1) {
-        ret = read(fd, train_dir.buf, sizeof(train_dir.buf));
+        ret = read(fd, train1.buf, sizeof(train1.buf));
         ERROR_CHECK(ret, -1, "read");
 
-        train_dir.length = ret;
-        ret = send(client_fd, &train_dir, sizeof(train_dir.length) + train_dir.length, 0);
+        train1.length = ret;
+        ret = send(client_fd, &train1, sizeof(train1.length) + train1.length, 0);
         ERROR_CHECK(ret, -1, "send");
         //printf("ret = %d\n",ret);
-        if (0 == train_dir.length) {
+        if (0 == train1.length) {
             break;
         }
     }
@@ -78,55 +78,54 @@ int cycle_recv(int fd, void * buf, size_t data_length) {
 
 int file_puts(int client_fd ,char* path){
     int fd;
-    int dataLen;
-    char buf[1000] ={0};
-    char temp[1024] = {0};
-    cycle_recv(client_fd,&dataLen,sizeof(int));
+    train_t train;
+    memset(&train, 0, sizeof(train));
+    char buf[1 << 10] = {0};
+    char temp[1 << 10] = {0};
+    
+    //接收文件名
+    cycle_recv(client_fd, &train.length, sizeof(train.length));
+    cycle_recv(client_fd, buf, train.length);
 
-    //收到-1说明对面输入错误，返回-1
-    if(-1 == dataLen){
-        return -1;
-    }
+    sprintf(temp, "%s/%s", path, buf);//拼接文件存放位置
 
-    cycle_recv(client_fd,buf,dataLen);//接收文件名
-
-    sprintf(temp,"%s/%s",path,buf);//拼接文件存放位置
-
-    fd = open(temp,O_CREAT|O_RDWR,0666);//创建或打开文件
-    ERROR_CHECK(fd,-1,"open");
+    fd = open(temp, O_CREAT | O_RDWR, 0666);//创建或打开文件
+    ERROR_CHECK(fd, -1, "open");
 
     //接收文件大小
     off_t fileSize;
     off_t downLoadSize = 0;
-    cycle_recv(client_fd,&dataLen,sizeof(int));
-    cycle_recv(client_fd,&fileSize,dataLen);
-    printf("%d %ld\n",dataLen,fileSize);
+    memset(&train, 0, sizeof(train));
+    cycle_recv(client_fd, &train.length, sizeof(train.length));
+    cycle_recv(client_fd, &fileSize, train.length);
+    /* printf("%ld %ld\n",train.length,fileSize); */
 
     //记录下载总时长
     struct timeval start;
     struct timeval end;
-    gettimeofday(&start,NULL);
+    gettimeofday(&start, NULL);
 
     //接收文件内容
-    while(1){
-        cycle_recv(client_fd,&dataLen,sizeof(int));//接收小火车数据长度信息
+    while (1) {
+        memset(&train, 0, sizeof(train));
+
+        cycle_recv(client_fd, &train.length, sizeof(train.length));//接收小火车数据长度信息
 
         //dataLen == 0 ，文件传输结束
-        if(0 == dataLen){
+        if (0 == train.length) {
             break;
         }
-        cycle_recv(client_fd,buf,dataLen);//接收小火车中的数据信息
+        cycle_recv(client_fd, train.buf, train.length);//接收小火车中的数据信息
 
-        write(fd,buf,dataLen);//写入到文件
+        write(fd, train.buf, train.length);//写入到文件
 
-        downLoadSize += dataLen;
+        downLoadSize += train.length;
 
     }
 
-    gettimeofday(&end,NULL);
-    printf("cost time=%ld\n", (end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec);
+    gettimeofday(&end, NULL);
+    printf("cost time = %ld\n", (end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec);
 
     close(fd);
     return 0;
 }
-

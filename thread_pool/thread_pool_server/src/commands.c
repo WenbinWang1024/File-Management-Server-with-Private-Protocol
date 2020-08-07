@@ -1,5 +1,6 @@
 #include "../head/commands.h"
 #include "../head/file_info.h"
+#include "../head/file_transfer.h"
 
 CMD_T get_cmd_type(char ** cmd_list, const char * cmd) {
     for (int i = 1; i < MAX_CMD_NO; ++i) {
@@ -77,9 +78,13 @@ int cmd_ls(int fd, char * cmd, char * path) {
     char stat_buf[1 << 10] = {0};
 
     struct stat buf;
+    memset(&buf,0,sizeof(buf));
+
+    train_t train;
 
     while (NULL != (pDirent = readdir(dirp))) {
         memset(&buf, 0, sizeof(buf));
+        memset(&train, 0, sizeof(train));
 
         int ret = stat(pDirent->d_name, &buf);
         ERROR_CHECK(ret, -1, "stat");
@@ -99,13 +104,16 @@ int cmd_ls(int fd, char * cmd, char * path) {
                 ctime(&buf.st_mtime)
                );
         strcat(stat_ret, stat_buf);
-        send(fd, stat_ret, strlen(stat_ret), 0);
+
+        train.length = strlen(stat_ret);
+        strcpy(train.buf, stat_ret);
+
+        send(fd, &train, sizeof(train.length) + train.length, 0);
     }
 
     // 结束信号
-    /* puts("ls finish");//解决bug，这个比较稳定 */
-    fflush(stdout);//ls的bug解决，clang编译无bug,gcc编译好像还会出现
-    send(fd, "end", 4, 0);
+    train.length = 0;
+    send(fd, &train, sizeof(train.length), 0);
 
     closedir(dirp);
     return 0;
