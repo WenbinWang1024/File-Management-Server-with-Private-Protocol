@@ -78,16 +78,15 @@ int cmd_ls(int fd, const char * cmd) {
     memcpy(train.buf, cmd, strlen(cmd));
     send(fd, &train, sizeof(train.length) + train.length, 0);
 
-    char buf[1 << 10] = {0};
     while (1) {
-        memset(buf, 0, sizeof(buf));
-        int ret = recv(fd, buf, sizeof(buf), 0);
-        ERROR_CHECK(ret, -1, "recv");
+        memset(&train,0,sizeof(train));
+        recv(fd, &train.length, sizeof(train.length), 0);
 
-        if (0 == strcmp("end", buf)) {
+        if (0 == train.length) {
             break;
         }
-        printf("%s", buf);
+        recv(fd,train.buf,train.length,0);
+        printf("%s", train.buf);
     }
 
     return 0;
