@@ -127,7 +127,7 @@ int cmd_gets(int fd, char * cmd)
     cycle_recv(fd, &trainname.length, sizeof(trainname.length));
     cycle_recv(fd, &trainname.buf, trainname.length);
     //printf("buf = %s\n",trainname.buf);
-    ret=trans_file(fd, trainname.buf);
+    ret = trans_file(fd, trainname.buf);
     if (-1 == ret) {
         char path[1 << 10] = {0};    
         train_t train1;
