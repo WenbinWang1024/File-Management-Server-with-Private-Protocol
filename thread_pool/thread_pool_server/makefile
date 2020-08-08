@@ -1,5 +1,5 @@
 RM := rm -f
-CC := clang
+CC := gcc
 headpath := ./head/
 srcpath := ./src/
 binpath := ./bin/

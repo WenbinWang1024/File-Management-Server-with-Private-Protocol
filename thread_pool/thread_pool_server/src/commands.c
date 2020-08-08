@@ -1,5 +1,6 @@
 #include "../head/commands.h"
 #include "../head/file_info.h"
+#include "../head/file_transfer.h"
 
 CMD_T get_cmd_type(char ** cmd_list, const char * cmd) {
     for (int i = 1; i < MAX_CMD_NO; ++i) {
@@ -24,6 +25,7 @@ int analyze_cmd(pTrain_t pTrain, int fd, char * path, pThread_Pool_t pThread_Poo
         cmd_ls(fd, pTrain->buf, path);
         break;
     case PUTS:
+        cmd_puts(fd, path);
         break;
     case GETS:
         cmd_gets(fd, pTrain->buf);
@@ -76,9 +78,13 @@ int cmd_ls(int fd, char * cmd, char * path) {
     char stat_buf[1 << 10] = {0};
 
     struct stat buf;
+    memset(&buf, 0, sizeof(buf));
+
+    train_t train;
 
     while (NULL != (pDirent = readdir(dirp))) {
         memset(&buf, 0, sizeof(buf));
+        memset(&train, 0, sizeof(train));
 
         int ret = stat(pDirent->d_name, &buf);
         ERROR_CHECK(ret, -1, "stat");
@@ -98,13 +104,24 @@ int cmd_ls(int fd, char * cmd, char * path) {
                 ctime(&buf.st_mtime)
                );
         strcat(stat_ret, stat_buf);
-        send(fd, stat_ret, strlen(stat_ret), 0);
+
+        train.length = strlen(stat_ret);
+        strcpy(train.buf, stat_ret);
+
+        send(fd, &train, sizeof(train.length) + train.length, 0);
     }
 
     // 结束信号
-    send(fd, "end", 4, 0);
+    train.length = 0;
+    send(fd, &train, sizeof(train.length), 0);
 
     closedir(dirp);
+    return 0;
+}
+
+int cmd_puts(int fd, char * path) {
+    file_puts(fd, path);
+
     return 0;
 }
 

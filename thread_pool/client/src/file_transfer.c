@@ -71,3 +71,53 @@ int cycle_recv(int fd, void * buf, size_t data_length) {
 
     return 0;
 }
+
+int file_puts(int client_fd, char * f_name) {//上传
+    int fd = open(f_name, O_RDWR);
+    ERROR_CHECK(fd, -1, "open");
+
+    train_t train;
+    memset(&train, 0, sizeof(train));
+    int ret = 0;
+
+    //发送文件名
+    train.length = strlen(f_name);
+    strcpy(train.buf, f_name);
+    send(client_fd, &train, sizeof(train.length) + train.length, 0);
+    ERROR_CHECK(ret, -1, "send f_name");
+
+    //发送文件大小
+    struct stat fileInfo;
+    memset(&fileInfo, 0, sizeof(fileInfo));
+    fstat(fd, &fileInfo);
+    train.length = sizeof(fileInfo.st_size);
+    memcpy(train.buf, &fileInfo.st_size, train.length);
+    ret = send(client_fd, &train, sizeof(train.length) + train.length, 0);
+    /* ret = send(client_fd,&train.buf,train.length,0); */
+    ERROR_CHECK(ret, -1, "send f_size");
+    /* printf("%ld %ld\n",train.length,fileInfo.st_size); */
+
+    //读取文件内容并发送
+    while (1) {
+        ret = read(fd, train.buf, sizeof(train.buf));
+        ERROR_CHECK(ret, -1, "read");
+        train.length = ret;
+
+        if (0 == train.length) {
+            break;//发送文件完成，跳出循环
+        }
+
+        send(client_fd, &train, sizeof(train.length) + train.length, 0);
+        ERROR_CHECK(ret, -1, "send file");
+    }
+
+    //发送文件发送完成的结束标志
+    ret = send(client_fd, &train, sizeof(train.length) + train.length, 0);
+    ERROR_CHECK(ret, -1, "send file finished");
+
+    printf("Sent successfully\n");
+
+    close(fd);
+    return 0;
+}
+
